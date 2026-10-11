@@ -1,0 +1,389 @@
+/* ==========================================================================
+   코코백업 — 사이트 스타일
+   --------------------------------------------------------------------------
+   · 이 파일은 "코코백업 사이트 화면"에만 쓰인다.
+     다운로드되는 결과 HTML의 스타일은 사용자가 올린 원본 HTML의 <style>과
+     app.js 안의 ALIGN_CSS / LABEL_BASE_CSS가 담당한다.
+   · 색, 여백 같은 값은 :root 변수에 모아 두었으니 여기만 고치면 전체에 반영된다.
+   ========================================================================== */
+
+
+/* ── 사이트 글꼴 ─────────────────────────────────────────────────────────
+   눈누(projectnoonnu)의 "옹글잎 콘콘" 글꼴.
+   index.html에서 <link rel="preload">로 미리 받아 두어서 첫 화면이 빨리 뜬다.
+   font-display: swap → 글꼴을 받기 전엔 기본 글꼴로 먼저 글자를 보여 준다.
+   굵기는 Regular 하나뿐이라 font-weight를 따로 지정하지 않는다.
+   (500, 700 등을 요청해도 이 글꼴에선 모양이 바뀌지 않음) */
+@font-face {
+  font-family: "OngleipKonkon";
+  src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/2412-1@1.0/Ownglyph_corncorn-Rg.woff2") format("woff2");
+  font-display: swap;
+}
+
+
+/* ── 디자인 변수 ─────────────────────────────────────────────────────────
+   색과 간격을 한곳에서 관리한다. */
+:root {
+  /* 스크롤바·체크박스 같은 브라우저 기본 UI도 어두운 테마로 그린다 */
+  color-scheme: dark;
+
+  /* 배경: 가장 어두운 것부터 bg → panel → raise 순으로 밝아진다 */
+  --bg: #0d0d0d;            /* 페이지 바탕 */
+  --panel: #141414;         /* 선택칸(select) 목록 바탕 */
+  --raise: #1b1b1b;         /* hover, 드래그 중, 비활성 버튼 바탕 */
+
+  /* 선 */
+  --line: #2a2a2a;          /* 구역 사이 구분선 */
+  --line-strong: #3a3a3a;   /* 입력칸·드롭존 테두리 */
+
+  /* 글자색: text(본문) → muted(보조) → faint(가장 흐림) */
+  --text: #ededed;
+  --muted: #8c8c8c;
+  --faint: #5c5c5c;
+
+  /* 강조색 */
+  --accent: #3ddaee;        /* 하늘색 포인트 (단계 번호, 다운로드 버튼 등) */
+  --accent-hover: #68e2f2;  /* 버튼 hover 색. accent 78% + 흰색 22%를 미리 계산한 값
+                               (color-mix()를 쓰면 구형 브라우저에서 무시되기 때문) */
+  --accent-ink: #111;       /* 강조색 위에 올라가는 글자·체크 표시 색 */
+  --danger: #ff4040;        /* 오류 표시 */
+
+  --font: "OngleipKonkon", system-ui, sans-serif;
+
+  /* 화면 좌우 여백. 상단바·각 단계·미리보기 바가 모두 이 값을 쓴다.
+     모바일에서는 아래 미디어쿼리에서 이 값 하나만 16px로 바꾼다. */
+  --gutter: 24px;
+}
+
+
+/* ── 기본 설정 ───────────────────────────────────────────────────────────── */
+
+/* 너비/높이에 padding과 border를 포함해서 계산한다 (크기 맞추기가 쉬워짐).
+   ⚠ ::before / ::after 에는 일부러 적용하지 않는다.
+   체크 표시와 선택칸 화살표(둘 다 ::after)는 "내용 크기 + 테두리"로 그려진
+   모양이라, 여기에 border-box를 넣으면 테두리 두께만큼 작아진다. */
+* { box-sizing: border-box; }
+
+/* hidden 속성이 붙은 요소는 무조건 숨긴다.
+   (display: flex 등을 지정한 요소는 hidden이 무시되는 문제를 막음) */
+[hidden] { display: none !important; }
+
+/* body를 화면 높이에 꽉 채워서, 넓은 화면에서는 페이지 자체가 아니라
+   왼쪽 패널과 미리보기가 각자 스크롤되게 한다. */
+html, body { height: 100%; }
+
+body {
+  margin: 0;
+  /* 세로 방향으로 [상단바][본문 레이아웃]을 쌓고, 레이아웃이 남는 높이를 차지 */
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  color: var(--text);
+  font: 14px/1.5 var(--font);   /* 글자 크기 14px / 줄 높이 1.5 / 글꼴 */
+}
+
+/* 버튼·입력칸은 브라우저가 기본 글꼴을 따로 지정하므로, 부모 것을 물려받게 한다 */
+button, input, select { font: inherit; color: inherit; }
+
+
+/* ── 상단바 ───────────────────────────────────────────────────────────────
+   왼쪽: 로고/사이트 이름, 오른쪽: 안내 문구 */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;   /* 양 끝으로 벌림 */
+  gap: 16px;
+  padding: 14px var(--gutter);
+  border-bottom: 1px solid var(--line);
+}
+
+.brand { display: flex; align-items: center; gap: 10px; font-size: 13px; }
+.brand-mark { width: 14px; height: 14px; background: var(--accent); } /* 하늘색 네모 로고 */
+.brand-name { letter-spacing: 0.14em; }                               /* COCOBACKUP 자간 넓게 */
+.brand-sub { color: var(--muted); }
+.topbar-note { margin: 0; color: var(--faint); font-size: 12px; }
+
+
+/* ── 본문 레이아웃 ────────────────────────────────────────────────────────
+   [왼쪽 설정 패널 360px][오른쪽 미리보기 나머지 전부] 두 칸 그리드 */
+.layout {
+  flex: 1;          /* body에서 상단바를 뺀 남은 높이를 전부 차지 */
+  min-height: 0;    /* flex 자식은 기본적으로 내용보다 작아지지 않는데,
+                       이걸 0으로 풀어야 안쪽 패널에 스크롤이 생긴다 */
+  display: grid;
+  /* minmax(0, 1fr): 미리보기 칸이 내용 때문에 화면 밖으로 늘어나지 않게 함 */
+  grid-template-columns: 360px minmax(0, 1fr);
+}
+
+/* 왼쪽 설정 패널. 내용이 길면 패널 안에서만 스크롤된다. */
+.panel {
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  border-right: 1px solid var(--line);
+}
+
+/* 01~05 각 단계 구역 */
+.step { padding: 20px var(--gutter); border-bottom: 1px solid var(--line); }
+
+/* 03 채널처럼 제목 오른쪽에 버튼(전체/해제)이 붙는 머리줄 */
+.step-head { display: flex; align-items: baseline; justify-content: space-between; }
+
+.step-title {
+  display: flex;
+  align-items: baseline;   /* 번호와 제목의 글자 밑선을 맞춤 */
+  gap: 10px;
+  margin: 0 0 12px;
+  font-size: 13px;
+}
+
+/* 제목 앞 "01", "02" 번호. h2라서 기본으로 굵게 나오는 것을 보통 굵기로 되돌림 */
+.step-no { color: var(--accent); font-size: 12px; font-weight: 400; }
+.step-actions { display: flex; gap: 12px; }
+
+/* 밑줄 친 글자 모양의 버튼 (전체 / 해제) */
+.link-btn {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--muted);
+  font-size: 12px;
+  text-decoration: underline;
+  text-underline-offset: 3px;   /* 밑줄을 글자에서 조금 띄움 */
+  cursor: pointer;
+}
+.link-btn:hover:not(:disabled) { color: var(--text); }
+.link-btn:disabled { color: var(--faint); text-decoration: none; cursor: default; }
+
+
+/* ── 파일 드롭존 ─────────────────────────────────────────────────────────
+   <label class="drop"> 안에 투명한 <input type="file">을 꽉 채워 깔아 두어서,
+   구역 어디를 눌러도 파일 선택창이 뜨고 파일을 끌어다 놓을 수도 있다.
+   상태 클래스(app.js가 붙임):
+     .is-over   파일을 끌고 위에 올라와 있는 중
+     .is-loaded 파일을 제대로 읽음
+     .is-error  파일을 읽지 못함 */
+.drop {
+  position: relative;      /* 안쪽 input을 이 상자 기준으로 꽉 채우기 위해 */
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 16px;
+  border: 1px dashed var(--line-strong);   /* 비어 있을 땐 점선 */
+  cursor: pointer;
+  transition: border-color 0.15s, background-color 0.15s;
+}
+.drop-sm { padding: 12px 14px; }   /* 04 글꼴의 작은 드롭존 */
+
+/* 실제 파일 입력칸은 보이지 않게(opacity 0) 상자 전체를 덮는다 */
+.drop input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+
+.drop:hover, .drop.is-over { border-color: var(--accent); }
+.drop.is-over { background: var(--raise); }
+/* 키보드(Tab)로 들어왔을 때 어디에 있는지 보이도록 */
+.drop:focus-within { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.drop-main { overflow-wrap: anywhere; }   /* 긴 파일 이름도 줄바꿈되게 */
+.drop-meta { color: var(--muted); font-size: 12px; }
+
+/* 읽기 성공: 실선 테두리 + 왼쪽에 굵은 하늘색 줄 */
+.drop.is-loaded { border: 1px solid var(--line-strong); border-left: 3px solid var(--accent); }
+
+/* 읽기 실패: 테두리와 설명 문구를 빨갛게.
+   (상자 전체 글자색도 빨개지므로 파일 이름만 원래 색으로 되돌린다) */
+.drop.is-error, .drop.is-error .drop-meta { border-color: var(--danger); color: var(--danger); }
+.drop.is-error .drop-main { color: var(--text); }
+
+
+/* ── 03 채널 목록 ─────────────────────────────────────────────────────────
+   JSON을 올리면 app.js가 채널마다 <li class="channel">을 만들어 넣는다. */
+.channels { margin: 0; padding: 0; list-style: none; border: 1px solid var(--line); }
+.channels-empty { padding: 14px; color: var(--faint); font-size: 12px; }   /* 아직 JSON이 없을 때 */
+.channel + .channel { border-top: 1px solid var(--line); }   /* 채널 사이에만 구분선 */
+
+/* 한 줄 = [체크박스 16px][채널 이름 남는 폭][메시지 수] */
+.channel label {
+  display: grid;
+  grid-template-columns: 16px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  cursor: pointer;
+}
+.channel label:hover { background: var(--raise); }
+
+/* 체크박스 직접 그리기.
+   appearance: none 으로 브라우저 기본 모양을 없애고 네모 칸만 남긴다. */
+.channel input {
+  appearance: none;
+  display: grid;
+  place-content: center;   /* 안의 체크 표시(::after)를 가운데에 */
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  border: 1px solid var(--line-strong);
+  background: transparent;
+  cursor: pointer;
+}
+.channel input:checked { border-color: var(--accent); background: var(--accent); }
+
+/* 체크 표시 ✓ : 가로 8 × 세로 4 상자의 왼쪽·아래 테두리만 그린 뒤
+   -45도 돌리면 ㄴ 모양이 ✓ 모양이 된다. */
+.channel input:checked::after {
+  content: "";
+  width: 8px;
+  height: 4px;
+  border-left: 2px solid var(--accent-ink);
+  border-bottom: 2px solid var(--accent-ink);
+  transform: translateY(-1px) rotate(-45deg);   /* 살짝 위로 올려서 시각적으로 가운데 */
+}
+.channel input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* 채널 이름과 ID가 길면 한 줄로 자르고 "…" 표시 */
+.channel-name,
+.channel-id { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* 채널 이름과 ID가 다를 때만 이름 아래 작게 ID를 보여 준다 (예: 명예의 전당 / Kak6BIKI-) */
+.channel-id { display: block; color: var(--faint); font-size: 11px; }
+
+.channel-count {
+  min-width: 3ch;                      /* 숫자 3자리 폭은 항상 확보 */
+  color: var(--muted);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;  /* 숫자 폭을 같게 해서 자릿수가 세로로 맞음 */
+  text-align: right;
+}
+
+.hint { margin: 10px 0 0; color: var(--faint); font-size: 12px; }
+
+
+/* ── 04 글꼴 선택칸 / 05 제목 입력칸 (공통 모양) ───────────────────────── */
+.text-input,
+.select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--line-strong);
+  border-radius: 0;           /* iOS 사파리가 기본으로 넣는 둥근 모서리 제거 */
+  background: transparent;
+}
+/* 선택했을 때 브라우저 기본 외곽선 대신 테두리만 하늘색으로 */
+.text-input:focus,
+.select:focus { outline: none; border-color: var(--accent); }
+
+/* 선택칸: 기본 화살표를 없애고(appearance: none) 오른쪽에 직접 그린 화살표 자리를 비움 */
+.select { appearance: none; padding-right: 36px; cursor: pointer; }
+/* 펼쳤을 때 나오는 목록도 어두운 색으로 (윈도우 크롬에서 흰 바탕으로 나오는 것 방지) */
+.select option,
+.select optgroup { background: var(--panel); color: var(--text); }
+
+/* 직접 그린 화살표 ∨ : 6×6 상자의 오른쪽·아래 테두리를 45도 돌린 것.
+   <select>에는 ::after를 붙일 수 없어서 감싸는 div(.select-wrap)에 붙인다. */
+.select-wrap { position: relative; }
+.select-wrap::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: 14px;
+  width: 6px;
+  height: 6px;
+  border-right: 1px solid var(--muted);
+  border-bottom: 1px solid var(--muted);
+  transform: translateY(-70%) rotate(45deg);
+  pointer-events: none;   /* 화살표를 눌러도 아래 선택칸이 눌리도록 클릭을 통과시킴 */
+}
+.font-select { margin-bottom: 12px; }
+
+
+/* ── 다운로드 버튼 구역 ───────────────────────────────────────────────── */
+
+/* margin-top: auto → 패널 내용이 짧을 때도 이 구역이 패널 맨 아래에 붙는다 */
+.export { margin-top: auto; padding: 20px var(--gutter) 28px; }
+
+.primary {
+  width: 100%;
+  padding: 14px;
+  border: 0;
+  background: var(--accent);
+  color: var(--accent-ink);
+  letter-spacing: 0.02em;
+  cursor: pointer;
+}
+.primary:hover:not(:disabled) { background: var(--accent-hover); }
+.primary:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
+/* 파일이 다 올라오기 전(비활성)에는 회색 */
+.primary:disabled { background: var(--raise); color: var(--faint); cursor: not-allowed; }
+
+/* 버튼 아래 상태 문구 (메시지 수·용량, 또는 안내/오류) */
+.status { margin: 10px 0 0; color: var(--muted); font-size: 12px; }
+.status.is-error { color: var(--danger); }
+
+
+/* ── 미리보기 ─────────────────────────────────────────────────────────────
+   위: [미리보기 | 메시지 수] 막대, 아래: 결과 HTML을 띄우는 iframe */
+.preview { display: flex; flex-direction: column; min-width: 0; }
+
+.preview-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px var(--gutter);
+  border-bottom: 1px solid var(--line);
+  font-size: 12px;
+}
+.preview-label { color: var(--muted); letter-spacing: 0.08em; }
+.preview-count { font-variant-numeric: tabular-nums; }
+
+/* iframe과 "빈 화면 안내"를 같은 자리에 겹쳐 놓기 위해 relative */
+.preview-frame { position: relative; flex: 1; min-height: 0; }
+
+.preview-frame iframe {
+  display: block;      /* inline이면 아래에 몇 px 빈틈이 생김 */
+  width: 100%;
+  height: 100%;
+  border: 0;
+  background: #121212; /* 결과가 뜨기 전 잠깐 보이는 바탕색 */
+}
+
+/* 파일이 아직 없을 때 iframe 위를 덮는 안내 화면 ("01 + 02") */
+.preview-empty {
+  position: absolute;
+  inset: 0;            /* 부모(.preview-frame)를 꽉 채움 */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 24px;
+  background: var(--bg);
+  color: var(--faint);
+  text-align: center;
+}
+
+.empty-big { color: var(--line-strong); font-size: 40px; letter-spacing: 0.04em; }
+
+
+/* ── 움직임 줄이기 ────────────────────────────────────────────────────────
+   운영체제에서 "동작 줄이기"를 켠 사용자에게는 전환 효과를 끈다. */
+@media (prefers-reduced-motion: reduce) {
+  .drop { transition: none; }
+}
+
+
+/* ── 좁은 화면 (태블릿·모바일, 너비 860px 이하) ─────────────────────────
+   두 칸 → 한 칸으로 바꾸고, 패널 아래에 미리보기를 쌓는다.
+   이때는 패널 각자 스크롤이 아니라 페이지 전체가 스크롤된다. */
+@media (max-width: 860px) {
+  :root { --gutter: 16px; }   /* 좌우 여백을 한 번에 줄임 */
+  body { height: auto; }      /* 화면 높이 고정을 풀어서 페이지가 길어질 수 있게 */
+  .topbar { flex-direction: column; align-items: flex-start; }   /* 로고와 안내 문구를 위아래로 */
+  .layout { grid-template-columns: 1fr; }
+  .panel { overflow: visible; border-right: 0; border-bottom: 1px solid var(--line); }
+
+  /* 미리보기 높이: 화면 높이의 75%.
+     vh는 모바일 주소창 높이를 계산에 넣지 않아서 실제보다 크게 잡히므로,
+     지원하는 브라우저에서는 실제 보이는 높이 기준인 dvh를 쓴다.
+     (dvh를 모르는 브라우저는 뒤의 줄을 무시하고 앞의 vh를 씀) */
+  .preview-frame { flex: none; height: 75vh; height: 75dvh; }
+
+  /* iOS는 글자 크기 16px 미만인 입력칸을 누르면 화면을 자동 확대하므로 16px로 */
+  .text-input, .select { font-size: 16px; }
+}
